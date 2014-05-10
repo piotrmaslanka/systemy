@@ -102,6 +102,29 @@ class TaskletManagingLibrary(Tasklet):
             globals.yEEP.put(source_tcb, result1, True)     
     
     @staticmethod
+    def sendto(tid, obj, result1=None):
+        """
+        Sends an object to a tasklet specified by it's TID
+        
+        @param tid TID of recipient tasklet
+        @param obj Object to send
+        @param result1 callable/1 that will be passed a boolean on whether the call succeeded
+        @raise AccessDenied not allowed to send
+        """            
+        source_tcb = globals.loc.current_tcb
+
+        with globals.ySAP.tcb_manip_lock:
+            if tid not in globals.ySAP.tasklets: 
+                raise yos.tasklets.Tasklet.DoesNotExist
+            
+            target_tcb = globals.ySAP.tcbs[tid]
+            target_task = globals.ySAP.tasklets[tid]
+
+        globals.yEEP.put(target_tcb, target_task.on_message, source_tcb.tid, obj)
+        if result1 != None:
+            globals.yEEP.put(source_tcb, result1, True)    
+                
+    @staticmethod
     def me():
         """
         Returns Tasklet object that represents the caller.

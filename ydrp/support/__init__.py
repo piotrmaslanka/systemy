@@ -15,7 +15,12 @@ class LaunchedTest(BaseTasklet):
 class SupportElementTasklet(BaseTasklet):
 
     def on_startup(self):
-        Tasklet.start(LaunchedTest, lambda tasklet: tasklet.send('Hello world, Child!'))
+        
+        def send_to_child(child):
+            child.send('Hello World, Child!')
+            Tasklet.sendto(child.tid, 'Hello World Child by sendto')
+        
+        Tasklet.start(LaunchedTest, send_to_child)
         Tasklet.me().send('Hello Me!')
 
     def on_message(self, src, msg):

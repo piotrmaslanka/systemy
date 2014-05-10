@@ -46,9 +46,18 @@ class Tasklet(object):
         """
         Sends given tasklet an object without blocking
         
-        There's no guarantee that it will arrive, as this is asynchronous
-        
         @param obj Object to send
         @param result1 callable/1 that will be passed a boolean on whether the call succeeded
         @raise AccessDenied not allowed to send
         """
+
+    @staticmethod
+    def sendto(tid, obj, result1=None):
+        """
+        Sends an object to a tasklet specified by it's TID
+        
+        @param tid TID of recipient tasklet
+        @param obj Object to send
+        @param result1 callable/1 that will be passed a boolean on whether the call succeeded
+        @raise AccessDenied not allowed to send
+        """        
