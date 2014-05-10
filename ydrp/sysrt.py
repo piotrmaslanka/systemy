@@ -10,7 +10,7 @@ class TaskletControlBlock(object):
         self.name = name
         self.user = user
 
-class ySAP(object):
+class SysRTI(object):
     def __init__(self):
         self.tcbs = {}      # TID => TCB
         self.tasklets = {}  # TID => Tasklet instance
@@ -24,7 +24,7 @@ class ySAP(object):
             self.next_tid += 1
             return nexttid
 
-globals.ySAP = ySAP()
+globals.SysRTI = SysRTI()
             
 class TaskletManagingLibrary(Tasklet):
     
@@ -40,15 +40,15 @@ class TaskletManagingLibrary(Tasklet):
         
         current_tcb = globals.loc.current_tcb
         
-        tid = globals.ySAP._getNextTID()
+        tid = globals.SysRTI._getNextTID()
         tcb = TaskletControlBlock(tid, 
                                   current_tcb.group,
                                   current_tcb.name,
                                   current_tcb.user)
 
-        with globals.ySAP.tcb_manip_lock:
-            globals.ySAP.tcbs[tid] = tcb
-            globals.ySAP.tasklets[tid] = task
+        with globals.SysRTI.tcb_manip_lock:
+            globals.SysRTI.tcbs[tid] = tcb
+            globals.SysRTI.tasklets[tid] = task
             
         globals.yEEP.put(tcb, task.on_startup)
         if result1 != None:
@@ -65,11 +65,11 @@ class TaskletManagingLibrary(Tasklet):
         @param tid Tasklet Identifier
         @param result1 callable/1 to call with Tasklet or specific exception class
         """
-        with globals.ySAP.tcb_manip_lock:
-            if tid not in globals.ySAP.tasklets:
+        with globals.SysRTI.tcb_manip_lock:
+            if tid not in globals.SysRTI.tasklets:
                 raise yos.tasklets.Tasklet.DoesNotExist
             
-            tcb = globals.ySAP.tcbs[tid]
+            tcb = globals.SysRTI.tcbs[tid]
 
         globals.yEEP.put(globals.loc.current_tcb, result1, TaskletManagingLibrary(tid, 
                                                                                 tcb.group, 
@@ -90,12 +90,12 @@ class TaskletManagingLibrary(Tasklet):
         """
         source_tcb = globals.loc.current_tcb
 
-        with globals.ySAP.tcb_manip_lock:
-            if self.tid not in globals.ySAP.tasklets:
+        with globals.SysRTI.tcb_manip_lock:
+            if self.tid not in globals.SysRTI.tasklets:
                 raise yos.tasklets.Tasklet.DoesNotExist
             
-            target_tcb = globals.ySAP.tcbs[self.tid]
-            target_task = globals.ySAP.tasklets[self.tid]
+            target_tcb = globals.SysRTI.tcbs[self.tid]
+            target_task = globals.SysRTI.tasklets[self.tid]
 
         globals.yEEP.put(target_tcb, target_task.on_message, source_tcb.tid, obj)
         if result1 != None:     
@@ -113,12 +113,12 @@ class TaskletManagingLibrary(Tasklet):
         """            
         source_tcb = globals.loc.current_tcb
 
-        with globals.ySAP.tcb_manip_lock:
-            if tid not in globals.ySAP.tasklets: 
+        with globals.SysRTI.tcb_manip_lock:
+            if tid not in globals.SysRTI.tasklets: 
                 raise yos.tasklets.Tasklet.DoesNotExist
             
-            target_tcb = globals.ySAP.tcbs[tid]
-            target_task = globals.ySAP.tasklets[tid]
+            target_tcb = globals.SysRTI.tcbs[tid]
+            target_task = globals.SysRTI.tasklets[tid]
 
         globals.yEEP.put(target_tcb, target_task.on_message, source_tcb.tid, obj)
         if result1 != None:
