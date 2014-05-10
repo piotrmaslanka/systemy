@@ -1,10 +1,12 @@
+from yos import YOSException
+
 class Tasklet(object):
     """Class describing a tasklet"""
     
-    class DoesNotExist(Exception):
+    class DoesNotExist(YOSException):
         """Given tasklet does not exist"""
         
-    class AccessDenied(Exception):
+    class AccessDenied(YOSException):
         """Is is not allowed to access this tasklet"""
         
         
