@@ -31,7 +31,7 @@ class SingleTaskletServerTasklet(BaseTasklet):
     
     def on_startup(self):
         self.serverSocket = NetworkSocket.server(NetworkSocket.SOCK_TCP, ('127.0.0.1', 65000))
-        self.serverSocket.register(self.on_readable, None, None, None, None)
+        self.serverSocket.register(self.on_new_connection, None, None, None, None)
 
     def on_new_connection(self, sock, newconn):
         newconn.register(self.on_client_data, None, None, None, None)
