@@ -1,6 +1,7 @@
 """y Development Runtime Profile"""
 
 from ydrp.yeep import yEEP
+from ydrp.ynep import yNEP
 
 if __name__ == '__main__':
     # Manually start Support Element
@@ -17,4 +18,4 @@ if __name__ == '__main__':
     print("YDRP: SupportElement tasklet (TID=0) started")
     
     globals.yEEP.start()
-    
+    globals.yNEP.start()
