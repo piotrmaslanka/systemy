@@ -33,7 +33,7 @@ class Tasklet(object):
         Returns an object representing target tasklet
         
         @param tid Tasklet Identifier
-        @param result1 callable/1 to call with Tasklet or specific exception class
+        @param result1 callable/1 to call with Tasklet or specific exception class if it fails
         """
         
         self.tid = tid          #: int
@@ -47,8 +47,8 @@ class Tasklet(object):
         Sends given tasklet an object without blocking
         
         @param obj Object to send
-        @param result1 callable/1 that will be passed a boolean on whether the call succeeded
-        @raise AccessDenied not allowed to send
+        @param result1 callable/1 that will be passed a True whether the call succeeded
+               of exception class if it doesn't
         """
 
     @staticmethod
@@ -58,6 +58,6 @@ class Tasklet(object):
         
         @param tid TID of recipient tasklet
         @param obj Object to send
-        @param result1 callable/1 that will be passed a boolean on whether the call succeeded
-        @raise AccessDenied not allowed to send
+        @param result1 callable/1 that will be passed a True whether the call succeeded
+               of exception class if it doesn't
         """        

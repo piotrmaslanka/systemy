@@ -63,18 +63,19 @@ class TaskletManagingLibrary(Tasklet):
         Returns an object representing target tasklet
         
         @param tid Tasklet Identifier
-        @param result1 callable/1 to call with Tasklet or specific exception class
+        @param result1 callable/1 to call with Tasklet or specific exception class if it fails
         """
-        with globals.SysRTI.tcb_manip_lock:
-            if tid not in globals.SysRTI.tasklets:
-                raise yos.tasklets.Tasklet.DoesNotExist
-            
-            tcb = globals.SysRTI.tcbs[tid]
-
-        globals.yEEP.put(globals.loc.current_tcb, result1, TaskletManagingLibrary(tid, 
-                                                                                tcb.group, 
-                                                                                tcb.name, 
-                                                                                tcb.user))            
+        try:
+            with globals.SysRTI.tcb_manip_lock:            
+                tcb = globals.SysRTI.tcbs[tid]
+        except KeyError:
+            if result1 != None:
+                globals.yEEP.put(globals.loc.current_tcb, result1, yos.tasklets.Tasklet.DoesNotExist)
+        else:
+            globals.yEEP.put(globals.loc.current_tcb, result1, TaskletManagingLibrary(tid, 
+                                                                                    tcb.group, 
+                                                                                    tcb.name, 
+                                                                                    tcb.user))            
     
             
         
@@ -85,14 +86,16 @@ class TaskletManagingLibrary(Tasklet):
         There's no guarantee that it will arrive, as this is asynchronous
         
         @param obj Object to send
-        @param result1 callable/1 that will be passed a boolean on whether the call succeeded
-        @raise AccessDenied not allowed to send
+        @param result1 callable/1 that will be passed a True whether the call succeeded
+               of exception class if it doesn't
         """
         source_tcb = globals.loc.current_tcb
 
         with globals.SysRTI.tcb_manip_lock:
             if self.tid not in globals.SysRTI.tasklets:
-                raise yos.tasklets.Tasklet.DoesNotExist
+                if result1 != None:
+                    globals.yEEP.put(source_tcb, result1, yos.tasklets.Tasklet.DoesNotExist)
+                    return
             
             target_tcb = globals.SysRTI.tcbs[self.tid]
             target_task = globals.SysRTI.tasklets[self.tid]
@@ -108,14 +111,16 @@ class TaskletManagingLibrary(Tasklet):
         
         @param tid TID of recipient tasklet
         @param obj Object to send
-        @param result1 callable/1 that will be passed a boolean on whether the call succeeded
-        @raise AccessDenied not allowed to send
+        @param result1 callable/1 that will be passed a True whether the call succeeded
+               of exception class if it doesn't
         """            
         source_tcb = globals.loc.current_tcb
 
         with globals.SysRTI.tcb_manip_lock:
             if tid not in globals.SysRTI.tasklets: 
-                raise yos.tasklets.Tasklet.DoesNotExist
+                if result1 != None:
+                    globals.yEEP.put(source_tcb, result1, yos.tasklets.Tasklet.DoesNotExist)
+                    return
             
             target_tcb = globals.SysRTI.tcbs[tid]
             target_task = globals.SysRTI.tasklets[tid]
