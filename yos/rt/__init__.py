@@ -1,0 +1,1 @@
+from yos.rt.tasklet import BaseTasklet
