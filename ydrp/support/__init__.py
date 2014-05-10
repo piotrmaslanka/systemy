@@ -8,8 +8,8 @@ class NetworkTest(BaseTasklet):
         self.sock = NetworkSocket.client(NetworkSocket.SOCK_TCP, ('www.yahoo.com', 80))
         self.sock.register(self.on_readable, None, self.on_connected, self.on_end, self.on_end)
 
-    def on_readable(self, sock):
-        print("NT: Received data, total %s bytes in" % (len(sock.readbuf), ))
+    def on_readable(self, sock, data):
+        print("NT: Received", len(data), "bytes")
         
     def on_connected(self, sock):
         print("NT: Connected, sending HTTP request")
@@ -51,6 +51,8 @@ class SupportElementTasklet(BaseTasklet):
         Tasklet.open(100, on_invalid_child_open)
         
         Tasklet.start(NetworkTest)
+        from examples.echoServer import MultiTaskletServerTasklet
+        Tasklet.start(MultiTaskletServerTasklet)
 
     def on_message(self, src, msg):
         print("SET: Received %s from %s" % (msg, src))

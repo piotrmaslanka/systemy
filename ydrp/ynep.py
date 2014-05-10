@@ -21,9 +21,16 @@ class yNEP(Thread):
     def addSock(self, socket, on_connected, on_read, on_closed, on_failed, on_except):
         """Adds a socket. Called by a foreign thread"""
         with self.sock_meta_lock:
+            if socket.fileno() in self.sockhandlers:
+                print("ALREADY CONNECTED!!!!")
             self.socks.append(socket)
             self.sockhandlers[socket.fileno()] = (on_connected, on_read, on_closed, on_failed, on_except)
             self.sock_tcbs[socket.fileno()] = globals.loc.current_tcb
+            
+        if not socket.is_client and not socket.issued_on_connected:
+            socket.issued_on_connected = True
+            if on_connected != None:
+                globals.yEEP.put(globals.loc.current_cb, on_connected, socket)
             
     def socket_failed(self, sock):
         """yNEP determined that socket is failed, purge it and tell yEEP"""
@@ -84,14 +91,16 @@ class yNEP(Thread):
         # Process readables
         for r in rx:
             fn = r.fileno()
-            r.handleRead()
+            data = r.handleRead()
             
             if r.is_closed:
                 self.socket_closed(r)
+            elif r.is_failed:
+                self.socket_failed(r)
             else:
                 h = self.sockhandlers[fn][1]
                 if h != None:
-                    globals.yEEP.put(self.sock_tcbs[fn], h, r)
+                    globals.yEEP.put(self.sock_tcbs[fn], h, r, data)
             
         for w in wx:
             if not w.is_connected:

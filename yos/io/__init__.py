@@ -15,11 +15,19 @@ class NetworkSocket(object):
         """Base class for socket exceptions"""
         
     @staticmethod
-    def client(socktype, address,):
+    def client(socktype, address):
         """Establishes a connection to target client at specified address.
         @param socktype Type of the socket
         @param address Socket-dependent address to target
-        @return NetworkSocket a socket in connecting or connected state
+        @return NetworkSocket a socket in connecting state
+        """
+        
+    @staticmethod
+    def server(socktype, address):
+        """Establishes a server to listen at specified address.
+        @param socktype Type of the socket
+        @param address Socket-dependent address to target
+        @return NetworkSocket a socket in connecting state
         """
         
     def register(self, on_readable, on_exception, on_connected, on_closed, on_failure):
@@ -28,7 +36,8 @@ class NetworkSocket(object):
         
         Every socket will have on_connected called exactly one time
         
-        @param on_readable callable/1 called in there's inbound data for socket. Parameter will be this socket
+        @param on_readable callable/2 called in there's inbound data for socket. Parameter will be this socket
+                            and readed data
         @param on_exception callable/1 called if socket's in exception status. Parameter will be this socket
         @param on_connected callable/1 called if socket's got connected. Parameter will be this socket of exception
                             class if connect fails
@@ -44,14 +53,6 @@ class NetworkSocket(object):
         @type data bytes or bytearray
         """
         
-    def read(self, length):
-        """
-        Read up to length bytes from internal buffer. Nonblocking.
-        
-        @param length amount of bytes to read
-        @type length int
-        @return bytes bytes readed from socket
-        """
         
     def close(self):
         """

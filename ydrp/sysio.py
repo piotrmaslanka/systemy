@@ -8,11 +8,11 @@ class NetworkSocketHandling(NetworkSocket):
     def __init__(self, socket, is_client, is_connected):
         self.socket = socket
         self.is_client = is_client
-        self.is_connected = is_connected
+        self.is_connected = is_connected    
+        self.issued_on_connected = False # makes sense only when server
         self.is_failed = False
         self.is_closed = False
         self.writebuf = bytearray()
-        self.readbuf = bytearray()
     
     @staticmethod
     def client(socktype, address):
@@ -29,29 +29,43 @@ class NetworkSocketHandling(NetworkSocket):
     
         return NetworkSocketHandling(sock, True, False)   
     
-    def handleRead(self):
-        """Called by yNEP if there's data for this socket"""
-        try:
-            data = self.socket.recv(1024)
-        except OSError:
-            data.is_failed = True
-            return
-    
-        if len(data) == 0:
-            self.is_closed = True
+    @staticmethod
+    def server(socktype, address):
+        """This is bugged for UDP servers so far"""
+        if socktype in (NetworkSocket.SOCK_TCP, NetworkSocket.SOCK_UDP, NetworkSocket.SOCK_TCPv6, NetworkSocket.SOCK_UDPv6):
+            sock = socket(AF_INET if socktype in (NetworkSocket.SOCK_TCP, NetworkSocket.SOCK_UDP) else AF_INET6,
+                          SOCK_STREAM if socktype in (NetworkSocket.SOCK_TCP, NetworkSocket.SOCK_TCPv6) else SOCK_DGRAM)
+            sock.setblocking(False)
+            try:
+                sock.bind(address)
+                sock.listen(10)
+            except IOError:
+                ns = NetworkSocketHandling(sock, False, True)
+                ns.is_failed = True
+                return ns
         else:
-            self.readbuf.extend(data)
+            raise ValueError('Invalid socket type')
     
-    def read(self, length=None):
-        try:
-            if not self.is_client:
-                return self.socket.accept()
+        return NetworkSocketHandling(sock, False, True)   
+            
+    
+    def handleRead(self):
+        """Called by yNEP if there's data for this socket.
+        Returns readed entry if there is data, None if closed or failed"""
+        if self.is_client:
+            try:
+                data =  self.socket.recv(1024)
+            except OSError:
+                data.is_failed = True
+                return
+        
+            if len(data) == 0:
+                self.is_closed = True
+                return
             else:
-                data = self.readbuf[:length]
-                del self.readbuf[:length]
                 return data
-        except OSError:
-            self.is_failed = True
+        else:
+            return NetworkSocketHandling(self.socket.accept()[0], True, True)
 
     def register(self, on_readable, on_exception, on_connected, on_closed, on_failure):
        globals.yNEP.addSock(self, on_connected, on_readable, on_closed, on_failure, on_exception)
