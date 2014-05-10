@@ -36,6 +36,8 @@ class Tasklet(object):
         
         @param tid Tasklet Identifier
         @param result1 callable/1 to call with Tasklet or specific exception class if it fails
+                       AccessDenied if tasklet has no privileges to open target
+                       DoesNotExist if target tasklet does not exist
         """
         
         self.tid = tid          #: int
@@ -51,6 +53,8 @@ class Tasklet(object):
         @param obj Object to send
         @param result1 callable/1 that will be passed a True whether the call succeeded
                of exception class if it doesn't
+                       AccessDenied if tasklet has no privileges to open target
+                       DoesNotExist if target tasklet does not exist
         """
 
     @staticmethod
@@ -62,4 +66,6 @@ class Tasklet(object):
         @param obj Object to send
         @param result1 callable/1 that will be passed a True whether the call succeeded
                of exception class if it doesn't
+                       AccessDenied if tasklet has no privileges to open target
+                       DoesNotExist if target tasklet does not exist
         """        
