@@ -28,8 +28,8 @@ class LaunchedTest(BaseTasklet):
     def on_message(self, src, msg):
         print("LT: Received %s from %s" % (msg, src))
         
-        if not self.already_replied:        
-            Tasklet.open(src, lambda tasklet: tasklet.send('And hello you back!'))
+        if not self.already_replied:      
+            Tasklet.sendto(src, 'And hello you back!')  
             self.already_replied = True
 
 class SupportElementTasklet(BaseTasklet):
