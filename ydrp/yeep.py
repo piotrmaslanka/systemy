@@ -14,8 +14,6 @@ class yEEP(Thread):
         self.terminated = True
         
     def run(self):
-        print("y Event Execution Processor started")
-
         while not self.terminated:
             try:
                 tcb, f, a, k = self.events.get(True, 10)

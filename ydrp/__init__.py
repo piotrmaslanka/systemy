@@ -14,5 +14,7 @@ if __name__ == '__main__':
     globals.ySAP.tasklets[0] = st
     globals.yEEP.put(tcb, st.on_startup)
     
+    print("YDRP: SupportElement tasklet (TID=0) started")
+    
     globals.yEEP.start()
     
