@@ -46,6 +46,8 @@ class TaskletManagingLibrary(Tasklet):
                                   current_tcb.name,
                                   current_tcb.user)
 
+        print("Started new tasklet, TID=%s" % (tid, ))
+
         with globals.SysRTI.tcb_manip_lock:
             globals.SysRTI.tcbs[tid] = tcb
             globals.SysRTI.tasklets[tid] = task
