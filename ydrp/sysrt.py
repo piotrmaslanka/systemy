@@ -3,12 +3,21 @@ from threading import RLock
 
 from ydrp import globals
 
+"""
+Majority of functions here do not modify tasklet's handlers.
+If they were network-based, they should have done so
+"""
+
 class TaskletControlBlock(object):
     def __init__(self, tid, group, name, user):
         self.tid = tid
         self.group = group
         self.name = name
         self.user = user
+        
+        self.handlers = 0
+        self.pending = 0
+    
 
 class SysRTI(object):
     def __init__(self):
@@ -17,6 +26,12 @@ class SysRTI(object):
         self.next_tid = 1
         
         self.tcb_manip_lock = RLock()
+        
+    def taskletExpired(self, tcb):    
+        with self.tcb_manip_lock:
+            del self.tcbs[tcb.tid]
+            del self.tasklets[tcb.tid]
+            print("Tasklet TID=%s expired" % (tcb.tid, ))
         
     def _getNextTID(self):
         with self.tcb_manip_lock:
@@ -58,7 +73,6 @@ class TaskletManagingLibrary(Tasklet):
                                                                            current_tcb.group, 
                                                                            current_tcb.name, 
                                                                            current_tcb.user))
-
     @staticmethod
     def open(tid, result1):
         """
@@ -97,7 +111,7 @@ class TaskletManagingLibrary(Tasklet):
             if self.tid not in globals.SysRTI.tasklets:
                 if result1 != None:
                     globals.yEEP.put(source_tcb, result1, yos.tasklets.Tasklet.DoesNotExist)
-                    return
+                return
             
             target_tcb = globals.SysRTI.tcbs[self.tid]
             target_task = globals.SysRTI.tasklets[self.tid]
@@ -122,7 +136,7 @@ class TaskletManagingLibrary(Tasklet):
             if tid not in globals.SysRTI.tasklets: 
                 if result1 != None:
                     globals.yEEP.put(source_tcb, result1, yos.tasklets.Tasklet.DoesNotExist)
-                    return
+                return
             
             target_tcb = globals.SysRTI.tcbs[tid]
             target_task = globals.SysRTI.tasklets[tid]

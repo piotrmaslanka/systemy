@@ -23,8 +23,14 @@ class yEEP(Thread):
             globals.loc.current_tcb = tcb
             
             f(*a, **k)
+            
+            tcb.pending -= 1
+            
+            if tcb.handlers == tcb.pending == 0:
+                globals.SysRTI.taskletExpired(tcb)
     
     def put(self, tcb, handler, *args, **kwargs):
+        tcb.pending += 1
         self.events.put((tcb, handler, args, kwargs))
         
 globals.yEEP = yEEP()

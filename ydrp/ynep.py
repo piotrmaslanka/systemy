@@ -12,6 +12,7 @@ class yNEP(Thread):
         self.socks = []
         self.sockhandlers = {}      # FileNO => (on_connected, on_read, on_closed, on_failed, on_except)
         self.sock_tcbs = {} # FileNO => TCB
+        self.handlers = {}  # FileNO => Amount of handlers that this socket provides
         self.sock_meta_lock = RLock()
         self.terminated = False
         
@@ -20,17 +21,28 @@ class yNEP(Thread):
         
     def addSock(self, socket, on_connected, on_read, on_closed, on_failed, on_except):
         """Adds a socket. Called by a foreign thread"""
+        
+        handlers = 0
+        if on_connected != None: handlers += 1
+        if on_read != None: handlers += 1
+        if on_closed != None: handlers += 1
+        if on_failed != None: handlers += 1
+        if on_except != None: handlers += 1
+        
         with self.sock_meta_lock:
             if socket.fileno() in self.sockhandlers:
                 print("ALREADY CONNECTED!!!!")
             self.socks.append(socket)
             self.sockhandlers[socket.fileno()] = (on_connected, on_read, on_closed, on_failed, on_except)
             self.sock_tcbs[socket.fileno()] = globals.loc.current_tcb
+            self.handlers[socket.fileno()] = handlers
             
         if not socket.is_client and not socket.issued_on_connected:
             socket.issued_on_connected = True
             if on_connected != None:
                 globals.yEEP.put(globals.loc.current_cb, on_connected, socket)
+                
+        globals.loc.current_tcb.handlers += handlers
             
     def socket_failed(self, sock):
         """yNEP determined that socket is failed, purge it and tell yEEP"""
@@ -41,8 +53,11 @@ class yNEP(Thread):
             globals.yEEP.put(self.sock_tcbs[fn], hndlr, sock)
 
         with self.sock_meta_lock:
+            tcb = self.sock_tcbs[fn]
             del self.sock_tcbs[fn]
             del self.sockhandlers[fn]
+            tcb.refsSub(self.handlers[fn])
+            del self.handlers[fn]
             self.socks.remove(sock)
         
     def socket_closed(self, sock):    
@@ -54,9 +69,12 @@ class yNEP(Thread):
             globals.yEEP.put(self.sock_tcbs[fn], hdlr, sock)
 
         with self.sock_meta_lock:
+            tcb = self.sock_tcbs[fn]
             del self.sock_tcbs[fn]
             del self.sockhandlers[fn]
             self.socks.remove(sock)
+            tcb.handlers -= self.handlers[fn]
+            del self.handlers[fn]            
     
             
     def iter(self):
