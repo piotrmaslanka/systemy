@@ -30,13 +30,12 @@ class SingleTaskletServerTasklet(BaseTasklet):
     """Server that uses a single tasklet to do it's job"""
     
     def on_startup(self):
-        self.serverSocket = NetworkSocket.server(NetworkSocket.SOCK_TCP, ('127.0.0.1', 65000))
-        self.serverSocket.register(self.on_new_connection, None, None, None, None)
+        NetworkSocket.server(NetworkSocket.SOCK_TCP, ('127.0.0.1', 65000)).register(self.on_new_connection, None, None, None, None)
 
     def on_new_connection(self, sock, newconn):
         newconn.register(self.on_client_data, None, None, None, None)
         
     def on_client_data(self, sock, data):
-        self.clientSocket.write(data) 
+        sock.write(data) 
 
 
