@@ -1,4 +1,4 @@
-from yos.tasklets import Tasklet
+from yos.tasklets import Tasklet, Profile
 from threading import RLock
 
 from ydrp import globals
@@ -154,6 +154,16 @@ class TaskletManagingLibrary(Tasklet):
         """
         tcb = globals.loc.current_tcb
         return TaskletManagingLibrary(tcb.tid, tcb.group, tcb.name, tcb.user)     
+
+class ProfileHandler(Profile):
+    @staticmethod
+    def disable_gc():
+        globals.loc.current_tcb.handlers += 1
+        
+    @staticmethod
+    def enable_gc():
+        globals.loc.current_tcb.handlers -= 1      
         
 import yos.tasklets
 yos.tasklets.Tasklet = TaskletManagingLibrary
+yos.tasklets.Profile = ProfileHandler

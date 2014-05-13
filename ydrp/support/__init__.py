@@ -1,5 +1,5 @@
 from yos.rt import BaseTasklet
-from yos.tasklets import Tasklet
+from yos.tasklets import Tasklet, Profile
 from yos.io import NetworkSocket
 
 class NetworkTest(BaseTasklet):
@@ -21,6 +21,7 @@ class NetworkTest(BaseTasklet):
 class LaunchedTest(BaseTasklet):
     
     def on_startup(self):
+        Profile.disable_gc()
         print("LT: Hey, I was launched! My TID is", Tasklet.me().tid)
         
         self.already_replied = False
@@ -35,7 +36,7 @@ class LaunchedTest(BaseTasklet):
 class SupportElementTasklet(BaseTasklet):
 
     def on_startup(self):
-        
+        Profile.disable_gc()
         print("SET: Hey, I was started! My TID is", Tasklet.me().tid)
         
         def on_child_started(child):

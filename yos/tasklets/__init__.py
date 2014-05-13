@@ -68,3 +68,20 @@ class Tasklet(object):
                        AccessDenied if tasklet has no privileges to open target
                        DoesNotExist if target tasklet does not exist
         """        
+
+class Profile(object):
+    """
+    Class used to tell runtime about execution profile of current tasklet
+    """
+    
+    @staticmethod
+    def disable_gc():
+        """
+        Disables garbage collection for current tasklet
+        """
+        
+    @staticmethod
+    def enable_gc():
+        """
+        Enable garbage collection for current tasklet
+        """        
