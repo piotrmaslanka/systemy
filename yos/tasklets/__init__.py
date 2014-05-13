@@ -9,7 +9,6 @@ class Tasklet(object):
     class AccessDenied(YOSException):
         """Is is not allowed to access this tasklet"""
         
-        
     @staticmethod
     def me():
         """
@@ -58,7 +57,7 @@ class Tasklet(object):
         """
 
     @staticmethod
-    def sendto(tid, obj, result1=None):
+    def send_to(tid, obj, result1=None):
         """
         Sends an object to a tasklet specified by it's TID
         

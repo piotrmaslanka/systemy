@@ -121,7 +121,7 @@ class TaskletManagingLibrary(Tasklet):
             globals.yEEP.put(source_tcb, result1, True)     
     
     @staticmethod
-    def sendto(tid, obj, result1=None):
+    def send_to(tid, obj, result1=None):
         """
         Sends an object to a tasklet specified by it's TID
         

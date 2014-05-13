@@ -29,7 +29,7 @@ class LaunchedTest(BaseTasklet):
         print("LT: Received %s from %s" % (msg, src))
         
         if not self.already_replied:      
-            Tasklet.sendto(src, 'And hello you back!')  
+            Tasklet.send_to(src, 'And hello you back!')  
             self.already_replied = True
 
 class SupportElementTasklet(BaseTasklet):
@@ -40,7 +40,7 @@ class SupportElementTasklet(BaseTasklet):
         
         def on_child_started(child):
             child.send('Hello World, Child!')
-            Tasklet.sendto(child.tid, 'Hello World Child by sendto')
+            Tasklet.send_to(child.tid, 'Hello World Child by sendto')
         
         def on_invalid_child_open(child):
             if child is Tasklet.DoesNotExist:
