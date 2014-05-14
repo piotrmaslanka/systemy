@@ -85,3 +85,11 @@ class Profile(object):
         """
         Enable garbage collection for current tasklet
         """        
+        
+    @staticmethod
+    def is_gc_enabled():
+        """
+        Returns whether GC is enabled for current tasklet
+        
+        @return bool whether GC is enabled for current tasklet
+        """

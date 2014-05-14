@@ -17,6 +17,8 @@ class TaskletControlBlock(object):
         
         self.handlers = 0
         self.pending = 0
+        
+        self.is_gc_on = True
     
 
 class SysRTI(object):
@@ -158,11 +160,19 @@ class TaskletManagingLibrary(Tasklet):
 class ProfileHandler(Profile):
     @staticmethod
     def disable_gc():
-        globals.loc.current_tcb.handlers += 1
-        
+        if globals.loc.current_tcb.is_gc_on:
+            globals.loc.current_tcb.handlers += 1
+            globals.loc.current_tcb.is_gc_on = False
+
     @staticmethod
     def enable_gc():
-        globals.loc.current_tcb.handlers -= 1      
+        if not globals.loc.current_tcb.is_gc_on:
+            globals.loc.current_tcb.handlers -= 1
+            globals.loc.current_tcb.is_gc_on = True      
+            
+    @staticmethod
+    def is_gc_enabled():
+        return globals.loc.current_tcb.is_gc_on
         
 import yos.tasklets
 yos.tasklets.Tasklet = TaskletManagingLibrary

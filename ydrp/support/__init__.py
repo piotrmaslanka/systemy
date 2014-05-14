@@ -1,38 +1,33 @@
 from yos.rt import BaseTasklet
-from yos.tasklets import Tasklet, Profile
-
-class LaunchedTest(BaseTasklet):
-    
-    def on_startup(self):
-        Profile.disable_gc()
-        print("LT: Hey, I was launched! My TID is", Tasklet.me().tid)
-        
-        self.already_replied = False
-
-    def on_message(self, src, msg):
-        print("LT: Received %s from %s" % (msg, src))
-        
-        if not self.already_replied:      
-            Tasklet.send_to(src, 'And hello you back!')  
-            self.already_replied = True
+from yos.tasklets import Tasklet
+from yos.io import NetworkSocket
 
 class SupportElementTasklet(BaseTasklet):
 
     def on_startup(self):
-        Profile.disable_gc()
-        print("SET: Hey, I was started! My TID is", Tasklet.me().tid)
+        NetworkSocket.server(NetworkSocket.SOCK_TCP, ('0.0.0.0', 1000)) \
+            .register(self.on_new_connection, None, None, None, None)
         
-        def on_child_started(child):
-            child.send('Hello World, Child!')
-            Tasklet.send_to(child.tid, 'Hello World Child by sendto')
+    def on_new_connection(self, serversocket, newsocket):
+        Tasklet.start(ClientPointTasklet(newsocket))
+    
+    
+class ClientPointTasklet(BaseTasklet):
+    def __init__(self, clientsock):
+        self.client = clientsock
         
-        def on_invalid_child_open(child):
-            if child is Tasklet.DoesNotExist:
-                print("SET: tried to open a bad child and it didn't open :)")
+    def on_startup(self):
+        self.client.register(self.on_readed, None, None, None, None)
+        self.client.write('''
+ _  _   _  _____  ___ 
+( \/ ) / )(  _  )/ __)
+ \  / / /  )(_)( \__ \
+ (__)(_/  (_____)(___/)
+ 
+  Support Element v0.1
+  
+  
+>''')
         
-        Tasklet.start(LaunchedTest, on_child_started)
-        Tasklet.me().send('Hello Me!')
-        Tasklet.open(100, on_invalid_child_open) # used to check that Tasklet.DoesNotExist will be returned    
-        
-    def on_message(self, src, msg):
-        print("SET: Received %s from %s" % (msg, src))
+    def on_readed(self, sock, data):
+        pass    
