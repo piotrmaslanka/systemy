@@ -13,6 +13,7 @@ class NetworkSocketHandling(NetworkSocket):
         self.is_failed = False
         self.is_closed = False
         self.writebuf = bytearray()
+        self.close_on_all_write = False
     
     @staticmethod
     def client(socktype, address):
@@ -82,10 +83,13 @@ class NetworkSocketHandling(NetworkSocket):
             pass
 
     def close(self):
-        try:
-            self.socket.close()
-        except OSError:
-            self.is_failed = True
+        if len(self.writebuf) > 0:
+            self.close_on_all_write = True
+        else:
+            try:
+                self.socket.close()
+            except OSError:
+                self.is_failed = True
             
     def fileno(self):
         return self.socket.fileno()

@@ -7,7 +7,7 @@ class SupportElementTasklet(BaseTasklet):
     def on_startup(self):
         NetworkSocket.server(NetworkSocket.SOCK_TCP, ('0.0.0.0', 1000)) \
             .register(self.on_new_connection, None, None, None, None)
-        
+
     def on_new_connection(self, serversocket, newsocket):
         Tasklet.start(ClientPointTasklet(newsocket), newname='client')
     
@@ -28,6 +28,8 @@ class ClientPointTasklet(BaseTasklet):
   
   
 >''')
+        
+
         
     def on_readed(self, sock, data):
         pass    

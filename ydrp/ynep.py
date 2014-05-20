@@ -135,6 +135,10 @@ class yNEP(Thread):
                 except OSError:
                     w.is_failed = True
                     
+                if len(w.writebuf) == 0 and w.close_on_all_write:
+                    w.socket.close()
+                    self.socket_closed(w)
+                    
         for e in ex:
             fn = e.fileno()
             h = self.sockhandlers[fn][4]
