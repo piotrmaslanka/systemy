@@ -9,7 +9,7 @@ class SupportElementTasklet(BaseTasklet):
             .register(self.on_new_connection, None, None, None, None)
         
     def on_new_connection(self, serversocket, newsocket):
-        Tasklet.start(ClientPointTasklet(newsocket))
+        Tasklet.start(ClientPointTasklet(newsocket), newname='client')
     
     
 class ClientPointTasklet(BaseTasklet):

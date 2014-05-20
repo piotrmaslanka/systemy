@@ -52,18 +52,26 @@ class TaskletManagingLibrary(Tasklet):
         self.user = user
     
     @staticmethod
-    def start(taskletCls, result1=None, *args, **kwargs):
+    def start(taskletCls, newname='Tasklet', newgroup=None, newuser=None, result1=None, *args, **kwargs):
         task = taskletCls(*args, **kwargs)
         
         current_tcb = globals.loc.current_tcb
         
+        
+        if (newuser != None) and (current_tcb.user != 'SYSTEMYA'):
+            raise Tasklet.AccessDenied('Cannot set user, not SYSTEMYA')
+        newuser = newuser or current_tcb.user
+        if (newgroup != None) and (current_tcb.group != 'admin'):
+            raise Tasklet.AccessDenied('Cannot set group, not admin')
+        newgroup = newgroup or current_tcb.group
+        
         tid = globals.SysRTI._getNextTID()
         tcb = TaskletControlBlock(tid, 
-                                  current_tcb.group,
-                                  current_tcb.name,
-                                  current_tcb.user)
+                                  newgroup,
+                                  newname,
+                                  newuser)
 
-        print("Started new tasklet, TID=%s" % (tid, ))
+        print("Started new tasklet, TID=%s (%s.%s.%s)" % (tid, newuser, newgroup, newname))
 
         with globals.SysRTI.tcb_manip_lock:
             globals.SysRTI.tcbs[tid] = tcb
