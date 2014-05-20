@@ -22,7 +22,8 @@ class yEEP(Thread):
             
             globals.loc.current_tcb = tcb
             
-            f(*a, **k)
+            if tcb.is_alive:
+                f(*a, **k)
             
             tcb.pending -= 1
             

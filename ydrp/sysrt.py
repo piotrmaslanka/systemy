@@ -19,6 +19,7 @@ class TaskletControlBlock(object):
         self.pending = 0
         
         self.is_gc_on = True
+        self.is_alive = True
     
 
 class SysRTI(object):

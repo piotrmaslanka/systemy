@@ -15,7 +15,7 @@ class yNEP(Thread):
         self.handlers = {}  # FileNO => Amount of handlers that this socket provides
         self.sock_meta_lock = RLock()
         self.terminated = False
-        
+
     def terminate(self):
         self.terminated = True
         
