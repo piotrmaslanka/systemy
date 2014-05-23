@@ -18,7 +18,7 @@ class Tasklet(object):
         """
         
     @staticmethod
-    def start(taskletCls, newname='Tasklet', newgroup=None, newuser=None, result1=None, *args, **kwargs):
+    def start(taskletCls, newname: str='Tasklet', newgroup=None, newuser=None, result1=None, *args, **kwargs):
         """
         Starts a new tasklet with given parameters
         
@@ -35,7 +35,7 @@ class Tasklet(object):
         """
 
     @staticmethod
-    def open(tid, result1):
+    def open(tid: int, result1):
         """
         Returns an object representing target tasklet
         
@@ -45,10 +45,10 @@ class Tasklet(object):
                        DoesNotExist if target tasklet does not exist
         """
         
-        self.tid = tid          #: int
-        self.group = None       #: str
-        self.name = None        #: str
-        self.user = None        #: str
+        # self.tid = tid          #: int
+        # self.group = None       #: str
+        # self.name = None        #: str
+        # self.user = None        #: str
         
         
     def send(self, obj, result1=None):
@@ -93,7 +93,7 @@ class Profile(object):
         """        
         
     @staticmethod
-    def is_gc_enabled():
+    def is_gc_enabled() -> bool:
         """
         Returns whether GC is enabled for current tasklet
         
