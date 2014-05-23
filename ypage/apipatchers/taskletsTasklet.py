@@ -13,7 +13,8 @@ class Tasklet(yos.tasklets.Tasklet):
     
     @staticmethod
     def me():
-        pass
+        tcb = S.loc.tcb
+        return Tasklet(tcb.tid, tcb.user, tcb.group, tcb.name)
     
     @staticmethod
     def start(taskletCls, newname='Tasklet', newgroup=None, newuser=None, result1=None, *args, **kwargs):
