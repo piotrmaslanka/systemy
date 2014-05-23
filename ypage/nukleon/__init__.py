@@ -37,16 +37,10 @@ class S(object):
     @staticmethod
     def startup():
         """Starts up the SIC"""
-      
         from ypage.eep import EEP
         eep1 = EEP()
-        eep2 = EEP()
-         
-        eep1.start()      
-        eep2.start()
-       
+        eep1.start()             
         S.eeps.append(eep1)
-        S.eeps.append(eep2)
         
     @staticmethod
     def schedule(tcb, callable_: callable, *args, **kwargs):
