@@ -41,7 +41,7 @@ class S(object):
     @staticmethod
     def startup():
         """Starts up the SIC"""
-        from ypage.eep import EEP
+        from ypage.processors.EEP import EEP
         eep1 = EEP()
         eep1.start()             
         S.eeps.append(eep1)
