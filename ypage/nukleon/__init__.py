@@ -25,7 +25,7 @@ class S(object):
 
 
     eeps = []       # event processors
-    
+    neps = []       # network processors
     
     @staticmethod
     def registerNewTasklet(tcb, inst):
@@ -45,6 +45,15 @@ class S(object):
         eep1 = EEP()
         eep1.start()             
         S.eeps.append(eep1)
+        
+        from ypage.processors.NEP import NEP
+        nep1 = NEP()
+        nep1.start()
+        S.neps.append(nep1)
+        
+        print("Started", len(S.neps)+len(S.eeps), "processors total:")
+        print("   ", len(S.neps), "Network Event Processors")
+        print("   ", len(S.eeps), "Event Execution Processors")
         
     @staticmethod
     def schedule(tcb, callable_: callable, *args, **kwargs):
