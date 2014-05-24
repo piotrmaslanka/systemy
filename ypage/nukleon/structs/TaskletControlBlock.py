@@ -12,7 +12,7 @@ class TaskletControlBlock(object):
         
         self.handlers = 0
         self.pending = 0
-        self.is_gc_on = True
+        self.is_gc_on = False
         self.is_alive = True
         
     def shouldBeCollected(self) -> bool:
@@ -20,7 +20,7 @@ class TaskletControlBlock(object):
         if self.is_gc_on:
             return self.handlers == self.pending == 0
         else:
-            return self.is_alive
+            return not self.is_alive
         
     def __eq__(self, tcb) -> bool:
         return self.tid == tcb.tid

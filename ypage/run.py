@@ -2,7 +2,7 @@ from ypage.nukleon import S
 
 import ypage.apipatchers    # this fixes yos module imports
 
-from examples.spawnHelloWorld import HelloWorldTasklet
+from examples.ipcExample import IPCTasklet
 from ypage.nukleon.structs import TaskletControlBlock
 
 if __name__ == '__main__':
@@ -11,7 +11,7 @@ if __name__ == '__main__':
 
     
     # manual bootstrap here
-    hwt = HelloWorldTasklet()
+    hwt = IPCTasklet()
     tcb = TaskletControlBlock(0, 'SYSTEMYA', 'admin', 'support')
-    S.registerNewTasklet(tcb)
+    S.registerNewTasklet(tcb, hwt)
     S.schedule(tcb, hwt.on_startup)

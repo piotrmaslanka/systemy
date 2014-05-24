@@ -1,6 +1,7 @@
 import yos.tasklets
 from ypage.nukleon import S
 from ypage.nukleon.structs import TaskletControlBlock
+from yos.rt import GCTasklet
 
 class Tasklet(yos.tasklets.Tasklet):
     
@@ -32,21 +33,67 @@ class Tasklet(yos.tasklets.Tasklet):
         tid = S.getNextTID()
         tcb = TaskletControlBlock(tid, newuser, newgroup, newname)
         
-        S.registerNewTasklet(tcb)
+        if isinstance(task, GCTasklet):
+            tcb.is_gc_on = True
+        
+        S.registerNewTasklet(tcb, task)
         S.schedule(tcb, task.on_startup)
 
         if result1 != None:
             S.schedule(current_tcb, result1, Tasklet(tid, newuser, newgroup, newname))
-        
+
     @staticmethod
     def open(tid, result1):
-        pass
+        if not S.isLocal(tid):
+            raise NotImplementedError("Sorry, no IPC yet")
+        
+        current_tcb = S.loc.tcb
+        
+        try:
+            tcb = S.tcbs[tid]
+            if not tcb.is_alive:
+                raise KeyError
+                
+        except KeyError:
+            S.schedule(current_tcb, result1, Tasklet.DoesNotExist)
+        else:
+            S.schedule(current_tcb, result1, Tasklet(tcb.tid, tcb.user, tcb.group, tcb.name))
         
     def send(self, obj, result1=None):
-        pass
+        current_tcb = S.loc.tcb
+        
+        try:
+            tcb = S.tcbs[self.tid]
+
+            if not tcb.is_alive:
+                raise KeyError
+            tcb_inst = S.tcb_inst[self.tid]
+        except KeyError:
+            if result1 != None:
+                S.schedule(current_tcb, result1, Tasklet.DoesNotExist)
+        else:
+            S.schedule(tcb, tcb_inst.on_message, current_tcb.tid, obj)
+            if result1 != None:
+                S.schedule(current_tcb, result1, True)
 
     @staticmethod
     def send_to(tid, obj, result1=None):
-        pass
+        if not S.isLocal(tid):
+            raise NotImplementedError("Sorry, no IPC yet")
+        
+        current_tcb = S.loc.tcb
+        
+        try:
+            tcb = S.tcbs[tid]
+            if not tcb.is_alive:
+                raise KeyError
+            tcb_inst = S.tcb_inst[tid]
+        except KeyError:
+            if result1 != None:
+                S.schedule(current_tcb, result1, Tasklet.DoesNotExist)
+        else:
+            if result1 != None:
+                S.schedule(current_tcb, result1, Tasklet(tcb.tid, tcb.user, tcb.group, tcb.name))
+            S.schedule(tcb, tcb_inst.on_message, current_tcb.tid, obj)
     
 yos.tasklets.Tasklet = Tasklet

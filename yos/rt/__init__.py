@@ -1,1 +1,1 @@
-from yos.rt.tasklet import BaseTasklet
+from yos.rt.tasklet import BaseTasklet, GCTasklet
