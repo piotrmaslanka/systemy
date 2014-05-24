@@ -1,14 +1,14 @@
 """
 Server that echoes everything sent to it via TCP
 """
-from yos.rt import BaseTasklet
+from yos.rt import BaseTasklet, GCTasklet
 from yos.tasklets import Tasklet
 from yos.io import NetworkSocket
 
 class MultiTaskletServerTasklet(BaseTasklet):
     """Server that uses multiple slave tasklets to do it's job"""
 
-    class ClientTasklet(BaseTasklet):
+    class ClientTasklet(GCTasklet):
         def __init__(self, clientSocket):
             self.clientSocket = clientSocket
             
