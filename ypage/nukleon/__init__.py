@@ -1,6 +1,6 @@
 from threading import Lock, local
 from queue import Queue
-
+import itertools
 from ypage.nukleon.NewTIDIssuer import NewTIDIssuer
 
 class S(object):
@@ -26,6 +26,7 @@ class S(object):
 
     eeps = []       # event processors
     neps = []       # network processors
+    smps = []       # synchronous message processors
     
     @staticmethod
     def registerNewTasklet(tcb, inst):
@@ -38,13 +39,11 @@ class S(object):
         del S.tcbs[tcb.tid]
         del S.tcb_inst[tcb.tid]
         
-        for eep in S.eeps:
-            eep.onTaskletTerminated(tcb)
-        for nep in S.neps:
-            nep.onTaskletTerminated(tcb)
-    
+        for proc in itertools.chain(S.eeps, S.neps, S.smps):
+            proc.onTaskletTerminated(tcb)
+
     @staticmethod
-    def startup(eeps=3, neps=3):
+    def startup(eeps=3, neps=3, smps=2):
         """Starts up the SIC"""
         from ypage.processors.EEP import EEP
         for i in range(0, eeps):
@@ -57,10 +56,17 @@ class S(object):
             nep = NEP()
             nep.start()
             S.neps.append(nep)
+            
+        from ypage.processors.SMP import SMP
+        for i in range(0, smps):
+            smp = SMP()
+            smp.start()
+            S.smps.append(smp)
         
-        print("Started", len(S.neps)+len(S.eeps), "processors total:")
-        print("   ", len(S.neps), "Network Event Processors")
-        print("   ", len(S.eeps), "Event Execution Processors")
+        print("Started", eeps+neps+smps, "processors total:")
+        print("   ", neps, "Network Event Processors")
+        print("   ", eeps, "Event Execution Processors")
+        print("   ", smps, "Synchronous Message Processors")
         
     @staticmethod
     def getNEP(tcb):
