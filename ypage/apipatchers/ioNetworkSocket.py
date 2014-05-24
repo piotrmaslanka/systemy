@@ -5,7 +5,7 @@ from ypage.nukleon import S
 
 class NetworkSocketHandling(NetworkSocket):
     
-    def __init__(self, socket, is_client, is_connected):
+    def __init__(self, socket, is_client: bool, is_connected: bool):
         self.socket = socket
         self.is_client = is_client
         self.is_connected = is_connected    
@@ -91,7 +91,7 @@ class NetworkSocketHandling(NetworkSocket):
             except OSError:
                 self.is_failed = True
             
-    def fileno(self):
+    def fileno(self) -> int:
         return self.socket.fileno()
             
 import yos.io

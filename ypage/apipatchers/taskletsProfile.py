@@ -16,7 +16,7 @@ class Profile(yos.tasklets.Profile):
         S.loc.tcb_is_gc_on = True
         
     @staticmethod
-    def is_gc_enabled():
+    def is_gc_enabled() -> bool:
         return S.loc.tcb.is_gc_on
     
 yos.tasklets.Profile = Profile

@@ -43,7 +43,7 @@ class Tasklet(yos.tasklets.Tasklet):
             S.schedule(current_tcb, result1, Tasklet(tid, newuser, newgroup, newname))
 
     @staticmethod
-    def open(tid, result1):
+    def open(tid: int, result1: callable):
         if not S.isLocal(tid):
             raise NotImplementedError("Sorry, no IPC yet")
         
@@ -59,7 +59,7 @@ class Tasklet(yos.tasklets.Tasklet):
         else:
             S.schedule(current_tcb, result1, Tasklet(tcb.tid, tcb.user, tcb.group, tcb.name))
         
-    def send(self, obj, result1=None):
+    def send(self, obj: object, result1: int=None):
         current_tcb = S.loc.tcb
         
         try:
@@ -77,7 +77,7 @@ class Tasklet(yos.tasklets.Tasklet):
                 S.schedule(current_tcb, result1, True)
 
     @staticmethod
-    def send_to(tid, obj, result1=None):
+    def send_to(tid, obj: object, result1: callable=None):
         if not S.isLocal(tid):
             raise NotImplementedError("Sorry, no IPC yet")
         
