@@ -2,15 +2,13 @@ import threading, queue, time
 from ypage.nukleon.structs import TaskletControlBlock
 from ypage.nukleon import S
 from ypage.interfaces import Processor
+from select import select
+from collections import defaultdict
 
 class NEP(threading.Thread, Processor):
 
     def onTaskletTerminated(self, tcb: TaskletControlBlock):
-        # I an the Event Processor
-        # I do not need to do anything - tcb entries have their is_alive set to False
-        # which will get automatically ignored by the runtime.
-        pass
-        
+        self.waiting_terminations.put(tcb)
         
     def __init__(self):
         threading.Thread.__init__(self)
@@ -18,7 +16,9 @@ class NEP(threading.Thread, Processor):
         self.sockhandlers = {}      # FileNO => (on_connected, on_read, on_closed, on_failed, on_except)
         self.sock_tcbs = {} # FileNO => TCB
         self.handlers = {}  # FileNO => Amount of handlers that this socket provides
+        self.tid_to_sock = defaultdict(lambda: list())
         self.sock_meta_lock = threading.RLock()
+        self.waiting_terminations = queue.Queue()
         self.terminated = False
 
     def terminate(self):
@@ -37,17 +37,19 @@ class NEP(threading.Thread, Processor):
         with self.sock_meta_lock:
             if socket.fileno() in self.sockhandlers:
                 print("ALREADY CONNECTED!!!!")
+                return
             self.socks.append(socket)
             self.sockhandlers[socket.fileno()] = (on_connected, on_read, on_closed, on_failed, on_except)
-            self.sock_tcbs[socket.fileno()] = globals.loc.current_tcb
+            self.sock_tcbs[socket.fileno()] = S.loc.tcb
             self.handlers[socket.fileno()] = handlers
+            self.tid_to_sock[S.loc.tcb.tid].append(socket) 
             
         if not socket.is_client and not socket.issued_on_connected:
             socket.issued_on_connected = True
             if on_connected != None:
-                globals.yEEP.put(globals.loc.current_cb, on_connected, socket)
+                S.schedule(S.loc.tcb, on_connected, socket)
                 
-        globals.loc.current_tcb.handlers += handlers
+        S.loc.tcb.handlers += handlers
             
     def socket_failed(self, sock):
         """yNEP determined that socket is failed, purge it and tell yEEP"""
@@ -55,7 +57,8 @@ class NEP(threading.Thread, Processor):
         fn = sock.fileno()
         hdlr = self.sockhandlers[fn][3]
         if hdlr != None:
-            globals.yEEP.put(self.sock_tcbs[fn], hndlr, sock)
+            if self.sock_tcbs[fn].is_alive:
+                S.schedule(self.sock_tcbs[fn], hdlr, sock)
 
         with self.sock_meta_lock:
             tcb = self.sock_tcbs[fn]
@@ -64,14 +67,18 @@ class NEP(threading.Thread, Processor):
             tcb.refsSub(self.handlers[fn])
             del self.handlers[fn]
             self.socks.remove(sock)
-        
+            self.tid_to_sock[tcb.tid].remove(sock)
+            if len(self.tid_to_sock[tcb.tid]) == 0:
+                del self.tid_to_sock[tcb.tid]
+                
     def socket_closed(self, sock):    
         """yNEP determined that socket is closed, purge it and tell yEEP"""
 
         fn = sock.fileno()
         hdlr = self.sockhandlers[fn][2]
         if hdlr != None:
-            globals.yEEP.put(self.sock_tcbs[fn], hdlr, sock)
+            if self.sock_tcbs[fn].is_alive:
+                S.schedule(self.sock_tcbs[fn], hdlr, sock)
 
         with self.sock_meta_lock:
             tcb = self.sock_tcbs[fn]
@@ -80,11 +87,26 @@ class NEP(threading.Thread, Processor):
             self.socks.remove(sock)
             tcb.handlers -= self.handlers[fn]
             del self.handlers[fn]            
-    
+            self.tid_to_sock[tcb.tid].remove(sock)
+            if len(self.tid_to_sock[tcb.tid]) == 0:
+                del self.tid_to_sock[tcb.tid]
             
     def iter(self):
         # Prepare socket listing
         with self.sock_meta_lock:
+            
+            # terminate pending
+            while self.waiting_terminations.qsize() > 0:
+                tcb = self.waiting_terminations.get()
+                for sock in list(self.tid_to_sock[tcb.tid].items()):  # we need a copy of the list
+                    try:
+                        sock.close()
+                    except OSError:
+                        pass
+                    self.sock_closed(sock)
+                
+        #    print ("IPv6 GOD: I got", len(self.socks), "in my back pocket") 
+            
             for sock in self.socks:
                 if sock.is_failed:
                     self.socket_failed(sock)
@@ -123,7 +145,7 @@ class NEP(threading.Thread, Processor):
             else:
                 h = self.sockhandlers[fn][1]
                 if h != None:
-                    globals.yEEP.put(self.sock_tcbs[fn], h, r, data)
+                    S.schedule(self.sock_tcbs[fn], h, r, data)
             
         for w in wx:
             if not w.is_connected:
@@ -131,7 +153,7 @@ class NEP(threading.Thread, Processor):
                 fn = w.fileno()
                 h = self.sockhandlers[fn][0]
                 if h != None:
-                    globals.yEEP.put(self.sock_tcbs[fn], h, w)
+                    S.schedule(self.sock_tcbs[fn], h, w)
 
             if len(w.writebuf) > 0:
                 try:
@@ -148,7 +170,7 @@ class NEP(threading.Thread, Processor):
             fn = e.fileno()
             h = self.sockhandlers[fn][4]
             if h != None:
-                globals.yEEP.put(self.sock_tcbs[fn], h, e)                
+                S.schedule(self.sock_tcbs[fn], h, e)                
     
             
     def run(self):

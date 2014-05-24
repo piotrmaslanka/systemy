@@ -37,23 +37,35 @@ class S(object):
         """an EEP has decided that a tasklet is dead"""
         del S.tcbs[tcb.tid]
         del S.tcb_inst[tcb.tid]
+        
+        for eep in S.eeps:
+            eep.onTaskletTerminated(tcb)
+        for nep in S.neps:
+            nep.onTaskletTerminated(tcb)
     
     @staticmethod
-    def startup():
+    def startup(eeps=3, neps=3):
         """Starts up the SIC"""
         from ypage.processors.EEP import EEP
-        eep1 = EEP()
-        eep1.start()             
-        S.eeps.append(eep1)
+        for i in range(0, eeps):
+            eep = EEP()
+            eep.start()             
+            S.eeps.append(eep)
         
         from ypage.processors.NEP import NEP
-        nep1 = NEP()
-        nep1.start()
-        S.neps.append(nep1)
+        for i in range(0, neps):
+            nep = NEP()
+            nep.start()
+            S.neps.append(nep)
         
         print("Started", len(S.neps)+len(S.eeps), "processors total:")
         print("   ", len(S.neps), "Network Event Processors")
         print("   ", len(S.eeps), "Event Execution Processors")
+        
+    @staticmethod
+    def getNEP(tcb):
+        """Returns a NEP that handles given tasklet"""
+        return S.neps[tcb.tid % len(S.neps)]
         
     @staticmethod
     def schedule(tcb, callable_: callable, *args, **kwargs):

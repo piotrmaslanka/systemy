@@ -2,7 +2,7 @@ from ypage.nukleon import S
 
 import ypage.apipatchers    # this fixes yos module imports
 
-from examples.ipcExample import IPCTasklet
+from examples.tcpConnExample import NetworkTest
 from ypage.nukleon.structs import TaskletControlBlock
 
 if __name__ == '__main__':
@@ -11,7 +11,7 @@ if __name__ == '__main__':
 
     
     # manual bootstrap here
-    hwt = IPCTasklet()
+    hwt = NetworkTest()
     tcb = TaskletControlBlock(0, 'SYSTEMYA', 'admin', 'support')
     S.registerNewTasklet(tcb, hwt)
     S.schedule(tcb, hwt.on_startup)
