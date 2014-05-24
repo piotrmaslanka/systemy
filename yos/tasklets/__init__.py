@@ -18,7 +18,7 @@ class Tasklet(object):
         """
         
     @staticmethod
-    def start(taskletCls, newname: str='Tasklet', newgroup=None, newuser=None, result1=None, *args, **kwargs):
+    def start(taskletCls, newname: str='Tasklet', newgroup: str=None, newuser: str=None, result1: str=None, *args, **kwargs):
         """
         Starts a new tasklet with given parameters
         
@@ -35,7 +35,7 @@ class Tasklet(object):
         """
 
     @staticmethod
-    def open(tid: int, result1):
+    def open(tid: int, result1: callable):
         """
         Returns an object representing target tasklet
         
@@ -51,7 +51,7 @@ class Tasklet(object):
         # self.user = None        #: str
         
         
-    def send(self, obj, result1=None):
+    def send(self, obj: object, result1: callable=None):
         """
         Sends given tasklet an object without blocking
         
@@ -63,7 +63,7 @@ class Tasklet(object):
         """
 
     @staticmethod
-    def send_to(tid, obj, result1=None):
+    def send_to(tid: int, obj: object, result1: callable=None):
         """
         Sends an object to a tasklet specified by it's TID
         

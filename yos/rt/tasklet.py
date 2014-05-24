@@ -18,7 +18,7 @@ class BaseTasklet(object):
         '''
         
         
-    def on_message(self, source, message):
+    def on_message(self, source: int, message: object):
         """
         Called on receiving a message via .send()
         @param source TID of the sender
