@@ -95,5 +95,17 @@ class Tasklet(yos.tasklets.Tasklet):
             if result1 != None:
                 S.schedule(current_tcb, result1, Tasklet(tcb.tid, tcb.user, tcb.group, tcb.name))
             S.schedule(tcb, tcb_inst.on_message, current_tcb.tid, obj)
+
+
+    def send_sync(self, obj: object, result1: callable):
+        S.getSMP(S.loc.tcb.tid).send_sync_to(S.loc.tcb, self.tid, obj, result1)
+        
+    @staticmethod
+    def send_sync_to(tid: int, obj: object, result1: callable):
+        if not S.isLocal(tid):
+            raise NotImplementedError("Sorry, no IPC yet")
+        
+        S.getSMP(S.loc.tcb.tid).send_sync_to(S.loc.tcb, tid, obj, result1)
+
     
 yos.tasklets.Tasklet = Tasklet

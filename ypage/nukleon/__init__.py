@@ -1,7 +1,7 @@
 from threading import Lock, local
 from queue import Queue
 import itertools
-from ypage.nukleon.NewTIDIssuer import NewTIDIssuer
+from ypage.nukleon.NewIDIssuer import NewIDIssuer
 
 class S(object):
     """
@@ -19,7 +19,7 @@ class S(object):
     terminations = Queue()  # list of tids'
 
 
-    tidIssuer = NewTIDIssuer()
+    tidIssuer = NewIDIssuer()
 
     loc = local()
 
@@ -59,7 +59,7 @@ class S(object):
             
         from ypage.processors.SMP import SMP
         for i in range(0, smps):
-            smp = SMP()
+            smp = SMP(i)
             smp.start()
             S.smps.append(smp)
         
@@ -72,6 +72,11 @@ class S(object):
     def getNEP(tcb):
         """Returns a NEP that handles given tasklet"""
         return S.neps[tcb.tid % len(S.neps)]
+
+    @staticmethod
+    def getSMP(tid):
+        """Returns a SMP that handles given tasklet on behalf of tid"""
+        return S.smps[tid % len(S.smps)]
         
     @staticmethod
     def schedule(tcb, callable_: callable, *args, **kwargs):

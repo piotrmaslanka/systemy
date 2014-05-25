@@ -20,7 +20,11 @@ class BaseTasklet(object):
         
     def on_message(self, source: int, message: object):
         """
-        Called on receiving a message via .send()
+        Called on receiving an asynchronous message or synchronous message
+        
+        If it's a synchronous message, it will be an instance of yos.ipc.SynchronousMessage,
+        and you should answer it - sooner or later
+        
         @param source TID of the sender
         @param message An object - content of the message
         """

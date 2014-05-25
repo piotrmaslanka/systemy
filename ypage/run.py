@@ -6,7 +6,7 @@ from ypage.nukleon.structs import TaskletControlBlock
 from ypage.initrd import initrd
 from yos.rt import GCTasklet
 from yos.tasklets import Tasklet
-
+import time
 import importlib
 
 class InitTasklet(GCTasklet):
@@ -35,11 +35,12 @@ class InitTasklet(GCTasklet):
 
 if __name__ == '__main__':
     S.startup()
-    S.tidIssuer.adjustTID(0)  # 0th Page on 0th Frame
+    S.tidIssuer.adjustID(0)  # 0th Page on 0th Frame
 
     
     # manual bootstrap here
     init = InitTasklet(initrd)
     tcb = TaskletControlBlock(0, 'SYSTEMYA', 'admin', 'init')
     S.registerNewTasklet(tcb, init)
-    S.schedule(tcb, init.on_startup)
+    S.schedule(tcb, init.on_startup)    
+

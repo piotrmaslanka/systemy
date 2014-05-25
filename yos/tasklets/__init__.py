@@ -57,7 +57,7 @@ class Tasklet(object):
         
         @param obj Object to send
         @param result1 callable/1 that will be passed a True whether the call succeeded
-               of exception class if it doesn't
+               or exception class if it doesn't
                        AccessDenied if tasklet has no privileges to open target
                        DoesNotExist if target tasklet does not exist
         """
@@ -70,10 +70,35 @@ class Tasklet(object):
         @param tid TID of recipient tasklet
         @param obj Object to send
         @param result1 callable/1 that will be passed a True whether the call succeeded
-               of exception class if it doesn't
+               or exception class if it doesn't
                        AccessDenied if tasklet has no privileges to open target
                        DoesNotExist if target tasklet does not exist
         """        
+        
+    def send_sync(self, obj: object, result1: callable):
+        """
+        Sends given tasklet a synchronous message
+        
+        @param obj Object to send
+        @param result1 callable/1 that will be passed the response from 
+               the other tasklet, or exception class if it doesn't or an error occurs
+                       AccessDenied if tasklet has no privileges to open target
+                       DoesNotExist if target tasklet does not exist OR the tasklet
+                                    died before responding
+        """
+        
+    @staticmethod
+    def send_sync_to(tid: int, obj: object, result1: callable):
+        """
+        Sends given tasklet, specified by it's TID, a synchronous message
+        
+        @param obj Object to send
+        @param result1 callable/1 that will be passed the response from 
+               the other tasklet, or exception class if it doesn't or an error occurs
+                       AccessDenied if tasklet has no privileges to open target
+                       DoesNotExist if target tasklet does not exist OR the tasklet
+                                    died before responding
+        """
 
 class Profile(object):
     """
