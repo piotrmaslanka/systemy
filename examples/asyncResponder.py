@@ -1,5 +1,5 @@
 from yos.tasklets import Tasklet, Profile
-from yos.rt import BaseTasklet
+from yos.rt import BaseTasklet, GCTasklet
 
 """
 Story is as follows.
