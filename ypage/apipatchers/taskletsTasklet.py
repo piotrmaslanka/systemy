@@ -19,9 +19,18 @@ class Tasklet(yos.tasklets.Tasklet):
     
     @staticmethod
     def start(taskletCls, newname='Tasklet', newgroup=None, newuser=None, result1=None, *args, **kwargs):
+        
+        # Temporarily disable TCB, so that calling tasklet's context
+        # is not used for misled API calls
+        # essentially bug-prevention
+        prev_tcb = S.loc.tcb
+        S.loc.tcb = None
+        
         task = taskletCls(*args, **kwargs)
         
-        current_tcb = S.loc.tcb
+        S.loc.tcb = prev_tcb
+        
+        current_tcb = prev_tcb
         
         if (newuser != None) and (current_tcb.user != 'SYSTEMYA'):
             raise Tasklet.AccessDenied('Cannot set user, not SYSTEMYA')
