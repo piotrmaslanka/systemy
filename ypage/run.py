@@ -25,7 +25,7 @@ class InitTasklet(GCTasklet):
                 try:
                     mod = importlib.import_module('.'.join(cls.split('.')[:-1]))
                     cls = getattr(mod, cls.split('.')[-1])
-                except ImportError:
+                except (ImportError, AttributeError):
                     print("INIT: Failed to import", cls)
                     continue
                 
