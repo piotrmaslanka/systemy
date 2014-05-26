@@ -56,7 +56,7 @@ class TEP(threading.Thread, Processor):
                 with self.metalock:
                     events = []
                     for rat, handler in self.events:
-                        if handler.tcb.tid != term:
+                        if handler.tcb != term:
                             events.append((rat, handler))
 
                     heapq.heapify(events)
