@@ -14,5 +14,5 @@ Here you can specify tasklets you want to load on startup, in the form of tuples
     sixth OPTIONAL element of a tuple is a kwargs dictionary
 """
 initrd = (       
-    ('USER', 'group', 'asyncCommTest', 'examples.catalogExample.CatalogExample'),
+    ('USER', 'group', 'asyncCommTest', 'examples.terminationExample.TerminationExampleTasklet'),
 )

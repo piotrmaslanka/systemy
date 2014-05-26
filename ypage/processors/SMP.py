@@ -87,8 +87,8 @@ class SMP(threading.Thread, Processor):
                 continue
             
             with self.metalock:
-                a = self.rev_uuids_by_tid.pop(tcb_to_terminate.tid)
-                b = self.uuids_by_tid.pop(tcb_to_terminate.tid)                
+                a = self.rev_uuids_by_tid.pop(tcb_to_terminate.tid, ())
+                b = self.uuids_by_tid.pop(tcb_to_terminate.tid, ())            
                 for uuid in itertools.chain(a, b):
                     del self.messages[uuid]
                 

@@ -95,9 +95,21 @@ class Tasklet(object):
         @param obj Object to send
         @param result1 callable/1 that will be passed the response from 
                the other tasklet, or exception class if it doesn't or an error occurs
-                       AccessDenied if tasklet has no privileges to open target
+                       AccessDenied if tasklet has no privileges to send to target
                        DoesNotExist if target tasklet does not exist OR the tasklet
                                     died before responding
+        """
+
+    def terminate(self):
+        """
+        Terminates the tasklet.
+        
+        @param result1 callable/1 that will be ran when target thread terminates (or is already terminated)
+                       AccessDenied if tasklet has no privileges to terminate target
+                       DoesNotExist if target tasklet does not exist OR the tasklet is already dead
+                       
+        Note that difference between returning True and DoesNotExist is very slim, especially if you expect
+        race conditions
         """
 
 class Profile(object):

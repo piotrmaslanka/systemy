@@ -96,6 +96,25 @@ class Tasklet(yos.tasklets.Tasklet):
                 S.schedule(current_tcb, result1, Tasklet(tcb.tid, tcb.user, tcb.group, tcb.name))
             S.schedule(tcb, tcb_inst.on_message, current_tcb.tid, obj)
 
+    def terminate(self, result1=None):
+        if self.user == 'SYSTEMYA':
+            if result1 != None:
+                S.schedule(S.loc.tcb, result1, Tasklet.AccessDenied)
+        
+        try:
+            tcb = S.tcbs[self.tid]
+            if not tcb.is_alive:
+                raise KeyError
+        except KeyError:
+            if result1 != None:
+                S.schedule(S.loc.tcb, result1, Tasklet.DoesNotExist)
+        else:
+            # OK, we got the tasklet, kill'em
+            if result1 != None:
+                if S.loc.tcb != tcb:
+                    S.schedule(S.loc.tcb, result1, True)
+                
+            S.onTaskletTerminated(tcb)
 
     def send_sync(self, obj: object, result1: callable):
         S.getSMP(S.loc.tcb.tid).send_sync_to(S.loc.tcb, self.tid, obj, result1)
