@@ -27,6 +27,7 @@ class S(object):
     eeps = []       # event processors
     neps = []       # network processors
     smps = []       # synchronous message processors
+    teps = []       # time event processors
     
     @staticmethod
     def registerNewTasklet(tcb, inst):
@@ -39,11 +40,11 @@ class S(object):
         del S.tcbs[tcb.tid]
         del S.tcb_inst[tcb.tid]
         
-        for proc in itertools.chain(S.eeps, S.neps, S.smps):
+        for proc in itertools.chain(S.eeps, S.neps, S.smps, S.teps):
             proc.onTaskletTerminated(tcb)
 
     @staticmethod
-    def startup(eeps=3, neps=3, smps=2):
+    def startup(eeps=3, neps=3, smps=2, teps=2):
         """Starts up the SIC"""
         from ypage.processors.EEP import EEP
         for i in range(0, eeps):
@@ -63,10 +64,17 @@ class S(object):
             smp.start()
             S.smps.append(smp)
         
-        print("Started", eeps+neps+smps, "processors total:")
+        from ypage.processors.TEP import TEP
+        for i in range(0, teps):
+            tep = TEP(i)
+            tep.start()
+            S.teps.append(tep)
+        
+        print("Started", eeps+neps+smps+teps, "processors total:")
         print("   ", neps, "Network Event Processors")
         print("   ", eeps, "Event Execution Processors")
         print("   ", smps, "Synchronous Message Processors")
+        print("   ", teps, "Time Event Processors")
         
     @staticmethod
     def getNEP(tcb):
@@ -77,6 +85,11 @@ class S(object):
     def getSMP(tid):
         """Returns a SMP that handles given tasklet on behalf of tid"""
         return S.smps[tid % len(S.smps)]
+
+    @staticmethod
+    def getTEP(tid):
+        """Returns a TEP that handles given tasklet on behalf of tid"""
+        return S.teps[tid % len(S.teps)]
         
     @staticmethod
     def schedule(tcb, callable_: callable, *args, **kwargs):
