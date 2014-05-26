@@ -1,4 +1,3 @@
-from socket import socket, AF_INET, AF_INET6, SOCK_STREAM, SOCK_DGRAM
 from yos.ipc import Catalog
 from collections import defaultdict
 from threading import RLock
