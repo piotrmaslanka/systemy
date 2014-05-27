@@ -12,6 +12,9 @@ class Timer(object):
         Consult your implementation to determine how reliable this is,
         what granularities of run_in you can pass, and what jitter 
         or delay can you expect
+        
+        Using this means implicitly hinting that ACCURACY counts
+        
         @return: Timer instance
         """
         
@@ -24,6 +27,9 @@ class Timer(object):
         Consult your implementation to determine how reliable this is,
         what granularities of run_in you can pass, and what jitter 
         or delay can you expect
+        
+        Using this means implicitly hinting that REPEATABILITY counts
+        
         @return: Timer instance
         """
 
