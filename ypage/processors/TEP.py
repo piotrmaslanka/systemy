@@ -28,7 +28,7 @@ class TEP(threading.Thread, Processor):
     def register(self, timerHandler):
         """Called by tasklets when they want to register a handler"""
         with self.metalock:
-            heapq.heappush(self.events, (timerHandler.run_at, timerHandler))
+            heapq.heappush(self.events, timerHandler)
         S.loc.tcb.handlers += 1
 
     def cancel(self, timerHandler):
@@ -43,11 +43,20 @@ class TEP(threading.Thread, Processor):
             with self.metalock:
                 try:
                     now = time.time()
-                    while self.events[0][0] < now:
-                        handler = heapq.heappop(self.events)[1]
-                        if not handler.cancelled:
+                    while self.events[0].run_at < now:
+                        handler = heapq.heappop(self.events)
+                        if handler.cancelled:
+                            handler.tcb.handlers -= 1
+                            continue
+                        
+                        if handler.cyclic:
                             S.schedule(handler.tcb, handler.callback)
-                        handler.tcb.handlers -= 1       # TODO: race condition?
+                            handler.run_at = now + handler.interval
+                            heapq.heappush(self.events, handler)
+                        else:
+                            S.schedule(handler.tcb, handler.callback)
+                            handler.tcb.handlers -= 1     
+  # TODO: race condition?
                 except IndexError:
                     pass
 
@@ -57,7 +66,7 @@ class TEP(threading.Thread, Processor):
                     events = []
                     for rat, handler in self.events:
                         if handler.tcb != term:
-                            events.append((rat, handler))
+                            events.append(handler)
 
                     heapq.heapify(events)
                     self.events = events
