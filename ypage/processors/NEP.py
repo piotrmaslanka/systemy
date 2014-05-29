@@ -64,7 +64,7 @@ class NEP(threading.Thread, Processor):
             tcb = self.sock_tcbs[fn]
             del self.sock_tcbs[fn]
             del self.sockhandlers[fn]
-            tcb.refsSub(self.handlers[fn])
+            tcb.handlers -= self.handlers[fn]
             del self.handlers[fn]
             self.socks.remove(sock)
             self.tid_to_sock[tcb.tid].remove(sock)
