@@ -19,7 +19,7 @@ class NCounter(object):
         self.times = times
         self.callback_ = callback
         
-    def __call__(self, clbck: callable=lambda: None):
+    def __call__(self, clbck: callable=lambda *args, **kwargs: None):
         
         def cb(*args, **kwargs):
             self.times -= 1
