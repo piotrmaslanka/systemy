@@ -99,15 +99,12 @@ class NEP(threading.Thread, Processor):
             while self.waiting_terminations.qsize() > 0:
                 tcb = self.waiting_terminations.get()
                 for sock in list(self.tid_to_sock[tcb.tid]):  # we need a copy of the list
+                    self.socket_closed(sock)
                     try:
                         sock.close()
                     except OSError:
-                        pass
-                    self.sock_closed(sock)
-                del self.tid_to_sock[tcb.tid]
+                        pass      
                 
-        #    print ("IPv6 GOD: I got", len(self.socks), "in my back pocket") 
-            
             for sock in self.socks:
                 if sock.is_failed:
                     self.socket_failed(sock)
