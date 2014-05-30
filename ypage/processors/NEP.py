@@ -39,9 +39,9 @@ class NEP(threading.Thread, Processor):
                 print("ALREADY CONNECTED!!!!")
                 return
             self.socks.append(socket)
-            self.sockhandlers[socket.fileno()] = (on_connected, on_read, on_closed, on_failed, on_except)
-            self.sock_tcbs[socket.fileno()] = S.loc.tcb
-            self.handlers[socket.fileno()] = handlers
+            self.sockhandlers[socket._fileno] = (on_connected, on_read, on_closed, on_failed, on_except)
+            self.sock_tcbs[socket._fileno] = S.loc.tcb
+            self.handlers[socket._fileno] = handlers
             self.tid_to_sock[S.loc.tcb.tid].append(socket) 
             
         if not socket.is_client and not socket.issued_on_connected:
@@ -54,7 +54,7 @@ class NEP(threading.Thread, Processor):
     def socket_failed(self, sock):
         """yNEP determined that socket is failed, purge it and tell yEEP"""
 
-        fn = sock.fileno()
+        fn = sock._fileno
         hdlr = self.sockhandlers[fn][3]
         if hdlr != None:
             if self.sock_tcbs[fn].is_alive:
@@ -74,7 +74,7 @@ class NEP(threading.Thread, Processor):
     def socket_closed(self, sock):    
         """yNEP determined that socket is closed, purge it and tell yEEP"""
 
-        fn = sock.fileno()
+        fn = sock._fileno
         hdlr = self.sockhandlers[fn][2]
         if hdlr != None:
             if self.sock_tcbs[fn].is_alive:
@@ -133,7 +133,7 @@ class NEP(threading.Thread, Processor):
                 
         # Process readables
         for r in rx:
-            fn = r.fileno()
+            fn = r._fileno
             data = r.handleRead()
             
             if r.is_closed:
@@ -148,7 +148,7 @@ class NEP(threading.Thread, Processor):
         for w in wx:
             if not w.is_connected:
                 w.is_connected = True
-                fn = w.fileno()
+                fn = w._fileno
                 h = self.sockhandlers[fn][0]
                 if h != None:
                     S.schedule(self.sock_tcbs[fn], h, w)
@@ -156,7 +156,9 @@ class NEP(threading.Thread, Processor):
             if len(w.writebuf) > 0:
                 try:
                     sl = w.socket.send(w.writebuf)
-                    del w.writebuf[:sl]   
+                    # Problem! Python may still be holding a writelock
+                    # following line replaced del w.writebuf[:sl]   
+                    w.writebuf = w.writebuf[sl:]
                 except OSError:
                     w.is_failed = True
                     
@@ -165,7 +167,7 @@ class NEP(threading.Thread, Processor):
                     self.socket_closed(w)
                     
         for e in ex:
-            fn = e.fileno()
+            fn = e._fileno
             h = self.sockhandlers[fn][4]
             if h != None:
                 S.schedule(self.sock_tcbs[fn], h, e)                

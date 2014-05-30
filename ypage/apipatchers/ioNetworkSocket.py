@@ -14,6 +14,8 @@ class NetworkSocketHandling(NetworkSocket):
         self.is_closed = False
         self.writebuf = bytearray()
         self.close_on_all_write = False
+        
+        self._fileno = socket.fileno()
     
     @staticmethod
     def client(socktype, address):
@@ -55,9 +57,9 @@ class NetworkSocketHandling(NetworkSocket):
         Returns readed entry if there is data, None if closed or failed"""
         if self.is_client:
             try:
-                data =  self.socket.recv(1024)
+                data = self.socket.recv(1024)
             except OSError:
-                data.is_failed = True
+                self.is_failed = True
                 return
         
             if len(data) == 0:
@@ -78,9 +80,19 @@ class NetworkSocketHandling(NetworkSocket):
         # Attempt speculative execution
         self.writebuf.extend(data)
         try:
-            del self.writebuf[:self.socket.send(self.writebuf)]
+            # following two lines replaced this one due to transient BufferErrors
+            # del self.writebuf[:self.socket.send(self.writebuf)]
+            dsl = self.socket.send(self.writebuf)
+            self.writebuf = self.writebuf[dsl:]
         except BlockingIOError:
             pass
+        except IOError:
+            try:
+                self.socket.close()
+            except:
+                pass
+            self.is_failed = True
+            self.is_closed = True
 
     def close(self):
         if len(self.writebuf) > 0:
@@ -92,7 +104,7 @@ class NetworkSocketHandling(NetworkSocket):
                 self.is_failed = True
             
     def fileno(self) -> int:
-        return self.socket.fileno()
+        return self._fileno
             
 import yos.io
 yos.io.NetworkSocket = NetworkSocketHandling
