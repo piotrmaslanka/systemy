@@ -64,7 +64,7 @@ class TEP(threading.Thread, Processor):
                 term = self.pending_terminations.get()
                 with self.metalock:
                     events = []
-                    for rat, handler in self.events:
+                    for handler in self.events:
                         if handler.tcb != term:
                             events.append(handler)
 
